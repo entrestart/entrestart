@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Menu, X, Briefcase } from "lucide-react"
 import { useState } from "react"
+import Link from "next/link"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -10,20 +11,20 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
       <div className="container mx-auto px-4 lg:px-8 flex h-16 items-center justify-between">
-        <div className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <div className="size-9 rounded-lg bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center">
             <Briefcase className="size-5 text-white" />
           </div>
           <span className="text-lg font-semibold text-foreground">ProServices</span>
-        </div>
+        </Link>
 
         <nav className="hidden md:flex items-center gap-10">
-          <a
-            href="#services"
+          <Link
+            href="/services"
             className="text-[15px] font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             Services
-          </a>
+          </Link>
           <a
             href="#entrepreneurs"
             className="text-[15px] font-medium text-muted-foreground hover:text-foreground transition-colors"
@@ -59,12 +60,12 @@ export function Header() {
       {isMenuOpen && (
         <div className="md:hidden border-t border-border/40 bg-background/95 backdrop-blur-md">
           <nav className="container flex flex-col gap-4 py-4">
-            <a
-              href="#services"
+            <Link
+              href="/services"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               Services
-            </a>
+            </Link>
             <a
               href="#entrepreneurs"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"

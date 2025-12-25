@@ -1,19 +1,134 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../lib/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id  Int @id @default(autoincrement())
-  email String @unique
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String
+  avatar        String?
+  bio           String?
+  role          UserRole  @default(CLIENT)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  services      Service[]
+  orders        Order[]   @relation("ClientOrders")
+  sellerOrders  Order[]   @relation("SellerOrders")
+  reviews       Review[]
+
+  @@map("users")
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  icon        String?
+  color       String?
+  serviceCount Int      @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  services    Service[]
+
+  @@map("categories")
+}
+
+model Service {
+  id              String        @id @default(uuid())
+  title           String
+  description     String
+  shortDescription String?
+  image           String?
+  price           Float
+  duration        Int           // in days
+  rating          Float         @default(0)
+  reviewCount     Int           @default(0)
+  status          ServiceStatus @default(DRAFT)
+  featured        Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  // Foreign keys
+  userId          String
+  categoryId      String
+  
+  // Relations
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category        Category      @relation(fields: [categoryId], references: [id])
+  orders          Order[]
+  reviews         Review[]
+
+  @@map("services")
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  status          OrderStatus @default(PENDING)
+  totalPrice      Float
+  message         String?
+  completedAt     DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  // Foreign keys
+  clientId        String
+  sellerId        String
+  serviceId       String
+  
+  // Relations
+  client          User        @relation("ClientOrders", fields: [clientId], references: [id])
+  seller          User        @relation("SellerOrders", fields: [sellerId], references: [id])
+  service         Service     @relation(fields: [serviceId], references: [id])
+  review          Review?
+
+  @@map("orders")
+}
+
+model Review {
+  id          String   @id @default(uuid())
+  rating      Int
+  comment     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Foreign keys
+  userId      String
+  serviceId   String
+  orderId     String   @unique
+  
+  // Relations
+  user        User     @relation(fields: [userId], references: [id])
+  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  order       Order    @relation(fields: [orderId], references: [id])
+
+  @@map("reviews")
+}
+
+enum UserRole {
+  CLIENT
+  ENTREPRENEUR
+  ADMIN
+}
+
+enum ServiceStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum OrderStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
 }
